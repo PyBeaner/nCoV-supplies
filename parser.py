@@ -28,7 +28,7 @@ class NoticeParser:
             return
         notice = notice_body.get_text().upper()
         requirements = self.extract_requirements(notice)
-        contacts = self.get_contacts(notice)
+        contacts = ContactExtractor(notice).extract()
         date = DateTimeExtractor(notice).extract()
         print(requirements, contacts, date)
 
@@ -47,8 +47,10 @@ class NoticeParser:
                 result.append(item)
         return result
 
-    def get_contacts(self, notice):
-        return ContactExtractor(notice).extract()
+
+class NoticeParseResult:
+    def __init__(self, ):
+        pass
 
 
 if __name__ == '__main__':

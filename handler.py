@@ -1,7 +1,8 @@
-import os
-from urllib.parse import quote_plus
+import datetime
 
 import requests
+
+from database import get_cursor
 
 STATUS_INIT = 'init'
 STATUS_FAILED = 'failed'
@@ -14,30 +15,43 @@ class NoticeHandler:
         self.url = url
         self.title = title
         self.source = source
+        self._id = None
         # TODO:notice updated?
         self.log_path = 'data/logs/%s/%s' % (source, title)
 
     # handle-status of this notice
     def get_status(self):
-        p = self.log_path
-        try:
-            with open(p, 'r') as f:
-                return f.readline().strip()
-        except Exception:
-            return STATUS_INIT
+        c = get_cursor()
+        c.execute('select id,status from notice where title=? and source=?', (self.title, self.source))
+        row = c.fetchone()
+        if not row:
+            return
+        if not self._id:
+            self._id = row['id']
+        return row['status']
 
     # update status
     def update_status(self, status):
-        p = self.log_path
-        os.makedirs(os.path.dirname(p), exist_ok=True)
-        with open(p, 'w') as f:
-            return f.write(status)
+        c = get_cursor()
+        now = datetime.datetime.now()
+        c.execute('update notice set status=?,updated_at=? where id=?',
+                  (status, now), self._id)
 
     # download the notice content
     def download(self):
         status = self.get_status()
         if status in (STATUS_DOWNLOADED, STATUS_IGNORED):
             return
+
+        if status is None:
+            now = datetime.datetime.now()
+            c = get_cursor()
+            c.execute(
+                'insert into notice (title, source, url, status, created_at, updated_at) '
+                'values (?,?,?,?,?,?)', (self.title, self.source, self.url, STATUS_INIT, now, now))
+            c.connection.commit()
+            self._id = c.lastrowid
+
         print('downloading...', self.url, status)
         try:
             resp = requests.get(self.url, timeout=3)
@@ -51,13 +65,14 @@ class NoticeHandler:
                 self.update_status(STATUS_IGNORED)
             return
         url = resp.url
-        save_as = 'data/notices/' + quote_plus(url)
-        if not save_as.endswith('.html'):
-            save_as += '.html'
-        with open(save_as, 'w', encoding='utf8') as f:
-            try:
-                text = resp.content.decode('utf8')
-            except:
-                text = resp.content.decode('gbk')
-            f.write(text)
-        self.update_status(STATUS_DOWNLOADED)
+        try:
+            text = resp.content.decode('utf8')
+        except:
+            text = resp.content.decode('gbk')
+        c = get_cursor()
+        now = datetime.datetime.now()
+        with c.connection as conn:
+            conn.execute('update notice set url=?,status=?,updated_at=? where id=?',
+                         (url, STATUS_DOWNLOADED, now, self._id))
+            conn.execute('insert into notice_detail (notice_id, raw_html) VALUES (?,?)',
+                         (self._id, text))
