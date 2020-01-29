@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from database import get_cursor
 from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
+from extractors.receiver import ReceiverExtractor
 from item import AllItems
 
 
@@ -38,6 +39,8 @@ class NoticeParser:
         contacts = ContactExtractor(notice).extract()
         # 发布日期
         date = DateTimeExtractor(notice).extract()
+        # 接收方
+        receiver = ReceiverExtractor(notice, page).extract()
         return NoticeParseResult(demands, date, contacts)
 
     # 所需物资
@@ -106,6 +109,6 @@ if __name__ == '__main__':
         html = row['raw_html']
         p = NoticeParser(html)
         r = p.parse()
-        if not r: # TODO
+        if not r:  # TODO
             continue
         csv.write(r.format() + os.linesep)

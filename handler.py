@@ -61,15 +61,18 @@ class NoticeHandler:
             return
 
         if resp.status_code != 200:
-            print("Error occurred when crawling", self.url)
-            if resp.status_code == 404:
+            print("Error occurred when crawling", self.url, resp.status_code)
+            if resp.status_code in (404, 403):
                 self.update_status(STATUS_IGNORED)
             return
         url = resp.url
         try:
             text = resp.content.decode('utf8')
         except:
-            text = resp.content.decode('gbk')
+            try:
+                text = resp.content.decode('gbk')
+            except:
+                return  # TODO
         c = get_cursor()
         now = datetime.datetime.now()
         with c.connection as conn:

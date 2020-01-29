@@ -22,6 +22,7 @@ class ContactExtractor(Extractor):
             if name:
                 result[name].add(phone)
         # TODO:座机
+        # TODO:优化
         return dict(result)
 
 

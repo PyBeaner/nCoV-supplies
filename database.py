@@ -1,6 +1,7 @@
+import os
 import sqlite3
 
-DEFAULT_DB = 'notice.db'
+DEFAULT_DB = os.path.abspath(os.path.curdir + './notice.db')
 
 
 def dict_factory(cursor, row):
