@@ -6,11 +6,15 @@ from database import get_cursor
 
 
 class Extractor:
+    remove_spaces = True
+
     def __init__(self, content='', page=None):
         """
         :type page: BeautifulSoup
         """
-        self.content = content.replace(' ', '')
+        if self.remove_spaces:
+            content = content.replace(' ', '')
+        self.content = content
         self.page = page
 
     def extract(self):
