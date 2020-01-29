@@ -49,8 +49,6 @@ class NoticeParser:
 
     # 所需物资
     def extract_demands(self, notice):
-        from item import AllItems
-
         result = []
         for item in AllItems:
             found = False
@@ -88,8 +86,8 @@ class NoticeParseResult:
                 row.append('')
         contact_str = []
         for name, phones in self.contacts.items():
-            contact_str.append(name + ":" + ",".join(phones))
-        contact_str = '/'.join(contact_str)
+            contact_str.append(name + ":" + "、".join(phones))
+        contact_str = '  '.join(contact_str)
         row.append(contact_str)
         url = self.notice['url'] if self.notice else ''
         row.append(url)

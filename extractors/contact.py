@@ -9,15 +9,17 @@ class ContactExtractor(Extractor):
         content = self.content.replace('电话：', '')
         result = defaultdict(set)
         # 姓名（手机号）
-        p = re.compile(r'(\D{2,4})\(?（?\s?(1[3-9]\d{9})\)?）?')
+        p = re.compile(r'(\D{2,4})\(?（?\s?(1[3-9]\d*)\)?）?')
         contacts = p.findall(content)
         for i, (name, phone) in enumerate(contacts):
+            if len(phone) != 11:
+                continue
             name = name.strip(',，（(：:').strip()
-            try:
-                name = name.split(':')[1]
-                name = name.split('：')[1]
-            except:
-                pass
+            for ch in (':', '：'):
+                try:
+                    name = name.split(ch)[1]
+                except:
+                    pass
             contacts[i] = (name, phone)
             if name:
                 result[name].add(phone)

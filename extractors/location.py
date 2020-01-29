@@ -8,14 +8,14 @@ class LocationExtractor(Extractor):
 
     def extract(self):
         content = self.content
-        p = re.compile(r'捐?赠?地\s*址：?:?(\S*)')
+        p = re.compile(r'捐?赠?地\s*址：?:?(\w*)')
         locations = p.findall(content)
         result = ''
         if locations:  # TODO:多地址（多公告内容）
             result = locations[0]
         else:
             print('failed to extra location info')
-        return result
+        return result.strip().strip('。')
 
 
 if __name__ == '__main__':
