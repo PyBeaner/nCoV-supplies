@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 
+from database import get_cursor
 from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
 
@@ -9,7 +10,7 @@ class NoticeParser:
         self.html = html
 
     def parse(self):
-        page = BeautifulSoup(self.html)
+        page = BeautifulSoup(self.html, features='lxml')
         title = page.title.string
 
         notice_body = None
@@ -54,9 +55,11 @@ class NoticeParseResult:
 
 
 if __name__ == '__main__':
-    import glob
 
-    for file in glob.glob('data/notices/*.html'):
-        html = open(file, encoding='utf8').read()
+    c = get_cursor()
+    c.execute('select id,notice_id,raw_html from notice_detail where content is null')
+    rows = c.fetchall()
+    for row in rows:
+        html = row['raw_html']
         p = NoticeParser(html)
         p.parse()

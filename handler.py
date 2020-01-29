@@ -12,23 +12,33 @@ STATUS_DOWNLOADED = 'downloaded'
 
 class NoticeHandler:
     def __init__(self, url, title, source):
+        self.init(url, title, source)
+        # TODO:notice updated?
+
+    def init(self, url, title, source):
         self.url = url
         self.title = title
         self.source = source
-        self._id = None
-        # TODO:notice updated?
-        self.log_path = 'data/logs/%s/%s' % (source, title)
 
-    # handle-status of this notice
-    def get_status(self):
         c = get_cursor()
         c.execute('select id,status from notice where title=? and source=?', (self.title, self.source))
         row = c.fetchone()
         if not row:
-            return
-        if not self._id:
+            now = datetime.datetime.now()
+            c = get_cursor()
+            c.execute(
+                'insert into notice (title, source, url, status, created_at, updated_at) '
+                'values (?,?,?,?,?,?)', (self.title, self.source, self.url, STATUS_INIT, now, now))
+            self._id = c.lastrowid
+        else:
             self._id = row['id']
-        return row['status']
+
+    # status of this notice
+    def get_status(self):
+        c = get_cursor()
+        c.execute('select id,status from notice where title=? and source=?', (self.title, self.source))
+        row = c.fetchone()
+        return row['status'] if row else None
 
     # update status
     def update_status(self, status):
@@ -42,15 +52,6 @@ class NoticeHandler:
         status = self.get_status()
         if status in (STATUS_DOWNLOADED, STATUS_IGNORED):
             return
-
-        if status is None:
-            now = datetime.datetime.now()
-            c = get_cursor()
-            c.execute(
-                'insert into notice (title, source, url, status, created_at, updated_at) '
-                'values (?,?,?,?,?,?)', (self.title, self.source, self.url, STATUS_INIT, now, now))
-            c.connection.commit()
-            self._id = c.lastrowid
 
         print('downloading...', self.url, status)
         try:
