@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 
+from extractors.contact import ContactExtractor
+
 
 class NoticeParser:
     def __init__(self, html):
@@ -25,7 +27,8 @@ class NoticeParser:
             return
         notice = notice_body.get_text().upper()
         requirements = self.extract_requirements(notice)
-        print(notice, requirements)
+        contacts = self.get_contacts(notice)
+        print(notice, requirements, contacts)
 
     # 所需物资
     def extract_requirements(self, notice):
@@ -41,6 +44,9 @@ class NoticeParser:
             if found:
                 result.append(item)
         return result
+
+    def get_contacts(self, notice):
+        return ContactExtractor(notice).extract()
 
 
 if __name__ == '__main__':
