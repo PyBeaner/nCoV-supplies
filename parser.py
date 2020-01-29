@@ -106,7 +106,7 @@ def get_headers():
 
 
 if __name__ == '__main__':
-
+    # TODO:更新状态
     c = get_cursor()
     c.execute('select id,notice_id,raw_html from notice_detail')
     rows = c.fetchall()
