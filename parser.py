@@ -42,7 +42,7 @@ class NoticeParser:
         # 发布日期
         date = DateTimeExtractor(notice).extract()
         # 接收方
-        receiver = ReceiverExtractor(notice, page).extract()
+        receiver = ReceiverExtractor(notice, notice_body).extract()
         # 物资捐赠地址
         location = LocationExtractor(notice).extract()
         return NoticeParseResult(title, receiver, location, demands, date, contacts)
@@ -77,8 +77,10 @@ class NoticeParseResult:
         self.notice = notice
 
     def format(self):
+        date = self.published_at.strftime('%Y-%m-%d') if self.published_at else ''
+        row = [date, self.receiver, self.location, self.title]
+
         demands = set([x.name for x in self.demands])
-        row = [self.receiver, self.location]
         for item in AllItems:
             if item.name in demands:
                 row.append('1')
@@ -91,19 +93,15 @@ class NoticeParseResult:
         row.append(contact_str)
         url = self.notice['url'] if self.notice else ''
         row.append(url)
-        row.append(self.published_at.strftime('%Y-%m-%d') if self.published_at else '')
-        row.append(self.title)
         return ','.join(row)
 
 
 def get_headers():
-    result = ['物资需求机构', '捐赠地址']
+    result = ['发布日期', '物资需求机构', '捐赠地址', '公告标题']
     for item in AllItems:
         result.append(item.name)
     result.append('联系人/联系方式')
     result.append('来源')
-    result.append('发布日期')
-    result.append('公告标题')
     return ','.join(result)
 
 

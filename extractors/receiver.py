@@ -33,14 +33,12 @@ class ReceiverExtractor(Extractor):
         if most_probably:
             result = most_probably
         if not result:
-            pass
+            pass  # TODO
             # with open('tmp.html', 'w', encoding='utf8') as f:
             #     f.write(page.prettify())
             #     import webbrowser
             #     webbrowser.open_new_tab('tmp.html')
-        else:
-            print(result, page.title.string)
-        return result
+        return result.strip()
 
 
 if __name__ == '__main__':
