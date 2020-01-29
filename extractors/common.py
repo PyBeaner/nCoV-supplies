@@ -23,3 +23,7 @@ def get_demo():
     c.execute('select * from notice_detail where raw_html is not null limit ?,1', (offset,))
     row = c.fetchone()
     return BeautifulSoup(row['raw_html'], features='lxml')
+
+
+if __name__ == '__main__':
+    get_demo()

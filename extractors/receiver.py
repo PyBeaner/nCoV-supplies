@@ -3,10 +3,11 @@ import re
 from extractors.common import Extractor, get_demo
 
 
+# TODO:暂时通过公告尾部发布日期判断需求方
 class ReceiverExtractor(Extractor):
     def extract(self):
         page = self.page
-        result = None
+        result = ''
         most_probably = None
         for node in page.find_all(re.compile(r'span|div|p')):
             text = node.text.strip()
@@ -30,9 +31,8 @@ class ReceiverExtractor(Extractor):
         if most_probably:
             result = most_probably
         if not result:
-            print('fail', page.text)
-            with open('tmp.html', 'w') as f:
-                f.write(page)
+            with open('tmp.html', 'w', encoding='utf8') as f:
+                f.write(page.prettify())
                 import webbrowser
                 webbrowser.open_new_tab('tmp.html')
         else:

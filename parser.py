@@ -41,7 +41,7 @@ class NoticeParser:
         date = DateTimeExtractor(notice).extract()
         # 接收方
         receiver = ReceiverExtractor(notice, page).extract()
-        return NoticeParseResult(demands, date, contacts)
+        return NoticeParseResult(receiver, demands, date, contacts)
 
     # 所需物资
     def extract_demands(self, notice):
@@ -60,18 +60,18 @@ class NoticeParser:
 
 
 class NoticeParseResult:
-    def __init__(self, demands, published_at, contacts):
+    def __init__(self, receiver, demands, published_at, contacts):
         """
-
         :type published_at: datetime.datetime
         """
+        self.receiver = receiver
         self.demands = demands
         self.published_at = published_at
         self.contacts = contacts
 
     def format(self):
         demands = set([x.name for x in self.demands])
-        row = []
+        row = [self.receiver]
         for item in AllItems:
             if item.name in demands:
                 row.append('1')
@@ -88,7 +88,7 @@ class NoticeParseResult:
 
 
 def get_headers():
-    result = []
+    result = ['物资需求机构']
     for item in AllItems:
         result.append(item.name)
     result.append('联系人/联系方式')
