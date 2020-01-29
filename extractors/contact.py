@@ -1,17 +1,28 @@
 import re
+from collections import defaultdict
 
 from extractors.common import Extractor
 
 
 class ContactExtractor(Extractor):
     def extract(self):
+        content = self.content.replace('电话：', '')
+        result = defaultdict(set)
+        # 姓名（手机号）
         p = re.compile(r'(\D{2,4})\(?（?\s?(1[3-9]\d{9})\)?）?')
-        contacts = p.findall(self.content)
+        contacts = p.findall(content)
         for i, (name, phone) in enumerate(contacts):
             name = name.strip(',，（(：:').strip()
+            try:
+                name = name.split(':')[1]
+                name = name.split('：')[1]
+            except:
+                pass
             contacts[i] = (name, phone)
+            if name:
+                result[name].add(phone)
         # TODO:座机
-        return contacts
+        return dict(result)
 
 
 if __name__ == '__main__':

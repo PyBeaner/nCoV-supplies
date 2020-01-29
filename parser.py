@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 
 from extractors.contact import ContactExtractor
+from extractors.date import DateTimeExtractor
 
 
 class NoticeParser:
@@ -28,7 +29,8 @@ class NoticeParser:
         notice = notice_body.get_text().upper()
         requirements = self.extract_requirements(notice)
         contacts = self.get_contacts(notice)
-        print(notice, requirements, contacts)
+        date = DateTimeExtractor(notice).extract()
+        print(requirements, contacts, date)
 
     # 所需物资
     def extract_requirements(self, notice):
