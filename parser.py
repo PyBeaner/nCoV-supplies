@@ -15,7 +15,7 @@ class NoticeParser:
 
     def parse(self):
         page = BeautifulSoup(self.html, features='lxml')
-        title = page.title.string
+        title = page.title.string if page.title else ''
 
         notice_body = None
         for div in page.find_all('div'):
@@ -106,4 +106,6 @@ if __name__ == '__main__':
         html = row['raw_html']
         p = NoticeParser(html)
         r = p.parse()
+        if not r: # TODO
+            continue
         csv.write(r.format() + os.linesep)

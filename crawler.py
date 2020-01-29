@@ -1,4 +1,5 @@
 import json
+import time
 
 import scrapy
 from scrapy.http import Response
@@ -35,8 +36,12 @@ class NoticeSpider(scrapy.Spider):
                 host = ''
             if 'nor-src-wrap' in host:
                 continue  # 忽略百家号的...
-            NoticeHandler(url, title, host).download()
-        exit()
+            print(title, host)
+            NoticeHandler(url, title, host)  # TODO:download the notice
 
-        next_page = response.css('a.n ::attr(href)').extract_first()
-        yield response.follow(next_page, self.parse)
+        next_page = response.css('a.n ::attr(href)').getall()
+        next_page = next_page[-1] if next_page else None
+        if next_page:
+            import random
+            time.sleep(random.randint(1, 5))
+            yield response.follow(next_page, self.parse)

@@ -45,7 +45,7 @@ class NoticeHandler:
         c = get_cursor()
         now = datetime.datetime.now()
         c.execute('update notice set status=?,updated_at=? where id=?',
-                  (status, now), self._id)
+                  (status, now, self._id))
 
     # download the notice content
     def download(self):
@@ -53,7 +53,7 @@ class NoticeHandler:
         if status in (STATUS_DOWNLOADED, STATUS_IGNORED):
             return
 
-        print('downloading...', self.url, status)
+        print('downloading...', self.url)
         try:
             resp = requests.get(self.url, timeout=3)
         except requests.exceptions.Timeout:
@@ -77,3 +77,11 @@ class NoticeHandler:
                          (url, STATUS_DOWNLOADED, now, self._id))
             conn.execute('insert into notice_detail (notice_id, raw_html) VALUES (?,?)',
                          (self._id, text))
+
+
+if __name__ == '__main__':
+    c = get_cursor()
+    c.execute('select url,title,source from notice where status=?', (STATUS_INIT,))
+    rows = c.fetchall()
+    for row in rows:
+        NoticeHandler(row['url'], row['title'], row['source']).download()
