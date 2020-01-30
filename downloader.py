@@ -85,20 +85,21 @@ class NoticeDownloader:
                          (self._id, text))
 
 
-if __name__ == '__main__':
+# 下载最新获取的公告列表
+def download_new_notices():
+    print('Downloading Notices...')
     c = get_cursor()
     c.execute('select url,title,source from notice where status=? order by id desc', (STATUS_INIT,))
     rows = c.fetchall()
     from threading import Thread
-
 
     def download(row):
         import time, random
         time.sleep(random.randint(0, 3))
         NoticeDownloader(row['url'], row['title'], row['source']).download()
 
-
     threads = []
+    n = 0
     while rows:
         row = rows.pop()
         t = Thread(target=download, args=(row,))
@@ -107,4 +108,10 @@ if __name__ == '__main__':
         if len(threads) == 5:
             for t in threads:
                 t.join(5)
+                n += 1
             threads = []
+    print('Downloading Finished!', n, ' new notices downloaded...')
+
+
+if __name__ == '__main__':
+    download_new_notices()
