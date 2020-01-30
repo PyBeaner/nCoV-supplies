@@ -9,12 +9,14 @@ class LocationExtractor(Extractor):
     remove_spaces = False
 
     def extract(self):
-        p = re.compile(r'捐?赠?地[址点]：?:?(\S*)')
+        p = re.compile(r'捐?赠?地[址点]：?:?([\w\d()（）、，-]*)')
         result = ''
         for node in self.page.find_all(re.compile(r'span|div|p')):
             text = node.text.strip().replace(' ', '').replace(' ', '')
             if '地址' in text or '地点' in text:
-                result = p.findall(text)[0]
+                tmp = p.findall(text)[0]
+                if len(tmp) < 100:
+                    result = tmp
         result = result.strip().strip('。')
         return result
 
