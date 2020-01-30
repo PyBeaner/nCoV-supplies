@@ -95,6 +95,7 @@ class NoticeParseResult:
         contact_str = '  '.join(contact_str)
         row.append(contact_str)
         url = self.notice['url'] if self.notice else ''
+        url = '=HYPERLINK("' + url + '")' if url else ''
         row.append(url)
         return row
 
