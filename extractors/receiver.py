@@ -34,14 +34,14 @@ class ReceiverExtractor(Extractor):
             if '备案' in text:
                 continue
             ok = True
-            for ch in (':', '：', '接受', '捐赠', '公告', '；', '！','？'):
+            for ch in (':', '：', '接受', '捐赠', '公告', '；', '！', '？'):
                 if ch in text:
                     ok = False
                     break
             if not ok:
                 continue
             maybe = False
-            for kw in ['红十字', '医院', '慈善', '健康', '卫生', '指挥部', '商务局']:
+            for kw in ['红十字', '医院', '慈善', '健康', '卫生', '指挥部', '商务局', '疾病预防']:
                 if kw in text:
                     maybe = True
                     break
@@ -65,6 +65,6 @@ class ReceiverExtractor(Extractor):
 
 
 if __name__ == '__main__':
-    page = get_demo(url='http://hksw.haikou.gov.cn/a/yaowendongtai/zhanhuihuodong/2020/0127/8468.html')
+    page = get_demo(url='http://www.pingliang.gov.cn/xwzx/tzgg/202001/t20200130_739266.html')
     e = ReceiverExtractor('', page)
     print(e.extract())

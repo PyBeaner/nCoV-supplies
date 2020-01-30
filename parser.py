@@ -90,6 +90,7 @@ class NoticeParseResult:
                 row.append('')
         contact_str = []
         for name, phones in self.contacts.items():
+            phones = sorted(list(phones))
             contact_str.append(name + ":" + "、".join(phones))
         contact_str = '  '.join(contact_str)
         row.append(contact_str)
@@ -134,12 +135,15 @@ if __name__ == '__main__':
     f.writerow(get_headers())
     csv_rows = []
     for row in rows:
+        notice = noticeById.get(row['notice_id'])
+        if '捐赠情况' in notice['title']:
+            print('non-demand notice', notice['title'])
+            continue
         html = row['raw_html']
         p = NoticeParser(html)
         r = p.parse()
         if not r:  # TODO
             continue
-        notice = noticeById.get(row['notice_id'])
         if notice:
             r.set_notice(notice)
         csv_rows.append(r.format())
