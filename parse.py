@@ -53,6 +53,8 @@ class NoticeParser:
         receiver = ReceiverExtractor(page=page).extract()
         # 物资捐赠地址
         address = AddressExtractor(page=notice_body).extract()
+        if not address:
+            address = receiver
         return NoticeParseResult(title, receiver, address, demands, date, contacts)
 
     # 所需物资
