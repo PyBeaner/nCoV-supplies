@@ -16,8 +16,12 @@ class NoticeParser:
 
     def parse(self):
         page = BeautifulSoup(self.html, features='lxml')
-        title = page.title.string.strip() if page.title and page.title.string else ''
-        title = '' if title is None else title
+        import re
+        titles = re.findall(r'\S+接[受|收]\S*捐赠\S*公告', page.text)
+        if titles and len(titles[0]) < 30:
+            title = titles[0]
+        else:
+            title = page.title.string.strip() if page.title and page.title.string else ''
 
         notice_body = None
         for div in page.find_all('div'):
@@ -41,6 +45,8 @@ class NoticeParser:
         demands = self.extract_demands(notice)
         # 联系人信息
         contacts = ContactExtractor(notice).extract()
+        if not contacts:
+            return
         # 发布日期
         date = DateTimeExtractor(notice).extract()
         # 接收方
