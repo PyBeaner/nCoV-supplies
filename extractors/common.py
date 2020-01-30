@@ -13,7 +13,7 @@ class Extractor:
         :type page: BeautifulSoup
         """
         if self.remove_spaces:
-            content = content.replace(' ', '')
+            content = content.replace(' ', '').replace(' ', '')
         self.content = content
         self.page = page
 
