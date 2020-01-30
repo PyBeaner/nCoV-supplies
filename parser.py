@@ -3,9 +3,9 @@ import datetime
 from bs4 import BeautifulSoup
 
 from database import get_cursor
+from extractors.address import AddressExtractor, AddressInfo
 from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
-from extractors.location import LocationExtractor
 from extractors.receiver import ReceiverExtractor
 from item import AllItems
 
@@ -52,8 +52,8 @@ class NoticeParser:
         # 接收方
         receiver = ReceiverExtractor(page=page).extract()
         # 物资捐赠地址
-        location = LocationExtractor(page=notice_body).extract()
-        return NoticeParseResult(title, receiver, location, demands, date, contacts)
+        address = AddressExtractor(page=notice_body).extract()
+        return NoticeParseResult(title, receiver, address, demands, date, contacts)
 
     # 所需物资
     def extract_demands(self, notice):
@@ -70,13 +70,13 @@ class NoticeParser:
 
 
 class NoticeParseResult:
-    def __init__(self, title, receiver, location, demands, published_at, contacts):
+    def __init__(self, title, receiver, address, demands, published_at, contacts):
         """
         :type published_at: datetime.datetime
         """
         self.title = title
         self.receiver = receiver
-        self.location = location
+        self.address = address
         self.demands = demands
         self.published_at = published_at
         self.contacts = contacts
@@ -86,7 +86,12 @@ class NoticeParseResult:
 
     def format(self):
         date = self.published_at.strftime('%Y-%m-%d') if self.published_at else ''
-        row = [date, self.receiver, self.location, self.title]
+        province, city, district = '', '', ''
+        if self.address:
+            address_info = AddressInfo(self.address)
+            province, city, district = address_info['省'], address_info['市'], address_info['区']
+
+        row = [date, province, city, district, self.receiver, self.address, self.title]
 
         demands = set([x.name for x in self.demands])
         for item in AllItems:
@@ -110,7 +115,7 @@ class NoticeParseResult:
 
 
 def get_headers():
-    result = ['发布日期', '物资需求机构', '捐赠地址', '公告标题']
+    result = ['发布日期', '省', '市', '区', '物资需求机构', '捐赠地址', '公告标题']
     for item in AllItems:
         result.append(item.name)
     result.append('联系人/联系方式')
