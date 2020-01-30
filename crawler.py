@@ -24,6 +24,7 @@ class NoticeSpider(scrapy.Spider):
         """
         :type response: Response
         """
+        duplicate_cnt = 0
         for i, result in enumerate(response.css('div.result .f13')):
             item = result.css('::attr(data-tools)').get()
             item = json.loads(item)
@@ -37,12 +38,16 @@ class NoticeSpider(scrapy.Spider):
             if 'nor-src-wrap' in host:
                 continue  # 忽略百家号的...
             print(title, host)
-            NoticeDownloader(url, title, host)  # TODO:download the notice
+            nd = NoticeDownloader(url, title, host)
+            if nd.get_status() is not None:
+                duplicate_cnt += 1
+        if duplicate_cnt == 10:
+            print('Crawling Finished!')
+            return
 
         next_page = response.css('a.n ::attr(href)').getall()
         next_page = next_page[-1] if next_page else None
         if next_page:
             import random
             time.sleep(random.randint(1, 5))
-            # TODO:stop?
             yield response.follow(next_page, self.parse)
