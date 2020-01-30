@@ -14,7 +14,7 @@ class ContactExtractor(Extractor):
         for i, (name, phone) in enumerate(contacts):
             if len(phone) != 11:
                 continue
-            name = name.strip(',，（(：:').strip()
+            name = name.strip(',，（(：:、').strip()
             for ch in (':', '：'):
                 try:
                     name = name.split(ch)[1]

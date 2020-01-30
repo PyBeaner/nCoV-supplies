@@ -1,5 +1,4 @@
 import datetime
-import os
 
 from bs4 import BeautifulSoup
 
@@ -17,7 +16,7 @@ class NoticeParser:
 
     def parse(self):
         page = BeautifulSoup(self.html, features='lxml')
-        title = page.title.string if page.title else ''
+        title = page.title.string.strip() if page.title and page.title.string else ''
         title = '' if title is None else title
 
         notice_body = None
@@ -27,12 +26,15 @@ class NoticeParser:
                 continue
             if '物资' not in text:
                 continue
+            ok = False
             for kw in ('新型', '肺炎', '防疫', '防控', '疫情'):
                 if kw in text:
+                    ok = True
                     break
-            notice_body = div
+            if ok:
+                notice_body = div
         if not notice_body:
-            print('Failed to extra notice info...', title)
+            print('Failed to extract notice info...', title)
             return
         notice = notice_body.get_text().upper()
         # 物资需求
@@ -44,7 +46,7 @@ class NoticeParser:
         # 接收方
         receiver = ReceiverExtractor(notice, notice_body).extract()
         # 物资捐赠地址
-        location = LocationExtractor(notice).extract()
+        location = LocationExtractor(notice, notice_body).extract()
         return NoticeParseResult(title, receiver, location, demands, date, contacts)
 
     # 所需物资
@@ -93,7 +95,7 @@ class NoticeParseResult:
         row.append(contact_str)
         url = self.notice['url'] if self.notice else ''
         row.append(url)
-        return ','.join(row)
+        return row
 
 
 def get_headers():
@@ -102,7 +104,7 @@ def get_headers():
         result.append(item.name)
     result.append('联系人/联系方式')
     result.append('来源')
-    return ','.join(result)
+    return result
 
 
 if __name__ == '__main__':
@@ -125,8 +127,11 @@ if __name__ == '__main__':
         noticeById[notice['id']] = notice
 
     result = []
-    csv = open('data/demands.csv', 'w', encoding='utf8')
-    csv.write(get_headers() + os.linesep)
+    import csv
+
+    f = open('data/demands.csv', 'w', encoding='utf8', newline='')
+    f: csv.DictWriter = csv.writer(f)
+    f.writerow(get_headers())
     for row in rows:
         html = row['raw_html']
         p = NoticeParser(html)
@@ -136,4 +141,4 @@ if __name__ == '__main__':
         notice = noticeById.get(row['notice_id'])
         if notice:
             r.set_notice(notice)
-        csv.write(r.format() + os.linesep)
+        f.writerow(r.format())
