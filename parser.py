@@ -132,6 +132,7 @@ if __name__ == '__main__':
     f = open('data/demands.csv', 'w', encoding='utf8', newline='')
     f: csv.DictWriter = csv.writer(f)
     f.writerow(get_headers())
+    csv_rows = []
     for row in rows:
         html = row['raw_html']
         p = NoticeParser(html)
@@ -141,4 +142,6 @@ if __name__ == '__main__':
         notice = noticeById.get(row['notice_id'])
         if notice:
             r.set_notice(notice)
-        f.writerow(r.format())
+        csv_rows.append(r.format())
+    csv_rows.sort(key=lambda x: x[0], reverse=True)
+    f.writerows(csv_rows)

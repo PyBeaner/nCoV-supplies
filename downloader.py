@@ -55,14 +55,17 @@ class NoticeDownloader:
 
         print('downloading...', self.url)
         try:
-            resp = requests.get(self.url, timeout=3)
-        except requests.exceptions.Timeout:
-            print('Timeout occurred...', self.url)
+            resp = requests.get(self.url, timeout=10)
+        except Exception as e:
+            if type(e) is requests.exceptions.Timeout:
+                print('Timeout occurred...', self.url)
+            else:
+                print("Error occurred when crawling", self.url, e)
             return
 
         if resp.status_code != 200:
             print("Error occurred when crawling", self.url, resp.status_code)
-            if resp.status_code in (404, 403):
+            if resp.status_code in (404, 403, 400):
                 self.update_status(STATUS_IGNORED)
             return
         url = resp.url
@@ -84,7 +87,24 @@ class NoticeDownloader:
 
 if __name__ == '__main__':
     c = get_cursor()
-    c.execute('select url,title,source from notice where status=?', (STATUS_INIT,))
+    c.execute('select url,title,source from notice where status=? order by id desc', (STATUS_INIT,))
     rows = c.fetchall()
-    for row in rows:
+    from threading import Thread
+
+
+    def download(row):
+        import time, random
+        time.sleep(random.randint(0, 3))
         NoticeDownloader(row['url'], row['title'], row['source']).download()
+
+
+    threads = []
+    while rows:
+        row = rows.pop()
+        t = Thread(target=download, args=(row,))
+        threads.append(t)
+        t.start()
+        if len(threads) == 5:
+            for t in threads:
+                t.join(5)
+            threads = []

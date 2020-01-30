@@ -20,7 +20,7 @@
 ## <a name="guide"></a>操作指引
 ### 本项目使用Python3开发，请先安装相关环境，详见[requirement.txt](requirement.txt)
 ### 1、抓取信息的搜索结果
-    python crawler.py
+    scrapy runspider crawler.py
     # 此脚本将查询最新（近7天，关键字为：'接受 捐赠 公告'）发布的公告，
     # 并保存到数据库
     
