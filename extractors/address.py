@@ -1,15 +1,13 @@
 import re
 
-from bs4 import BeautifulSoup
-
-from extractors.common import Extractor
+from extractors.common import Extractor, get_demo
 
 
 class AddressExtractor(Extractor):
     remove_spaces = False
 
     def extract(self):
-        p = re.compile(r'捐?赠?地[址点]：?:?([\w\d()（）、，-]+)')
+        p = re.compile(r'捐?赠?地[址点]：?:?([\w\d()（）、，-]+)')  # TODO:换行
         result = ''
         for node in self.page.find_all(re.compile(r'span|div|p')):
             text = node.text.strip().replace(' ', '').replace(' ', '')
@@ -39,8 +37,6 @@ class AddressInfo:
 
 
 if __name__ == '__main__':
-    # page = get_demo()
-    html = BeautifulSoup(
-        '''<p style="text-indent:43px;text-autospace:ideograph-numeric;line-height:36px"><span style=";font-family:宋体;font-size:21px"><span style="font-family:宋体">地址：</span></span><span style=";font-family:宋体;font-size:21px"><span style="font-family:宋体">文圣区衍水大街</span>38<span style="font-family:宋体">号（区便民服务大厅民政窗口）</span></span></p>''')
-    e = AddressExtractor(html.text, html)
+    page = get_demo(url='http://www.ya.gov.cn/zwgk/tzgg/gggs/202001/t20200130_1470375.htm')
+    e = AddressExtractor(page=page)
     print(e.extract())

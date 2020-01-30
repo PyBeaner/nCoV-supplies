@@ -18,7 +18,7 @@ class NoticeParser:
         page = BeautifulSoup(self.html, features='lxml')
         import re
         titles = re.findall(r'\S+接[受|收]\S*捐赠\S*公告', page.text)
-        if titles and len(titles[0]) < 30:
+        if titles and len(titles[0]) <= 40:
             title = titles[0]
         else:
             title = page.title.string.strip() if page.title and page.title.string else ''
