@@ -23,8 +23,12 @@ class ContactExtractor(Extractor):
             contacts[i] = (name, phone)
             if name:
                 result[name].add(phone)
-        # TODO:座机
         # TODO:优化
+        # 座机
+        if not result:
+            telephones = re.findall(r'(\d{3,4}-{1,2}\d{7})', content)
+            if telephones:
+                result[''] = set(x.replace('--', '-') for x in telephones)
         return dict(result)
 
 

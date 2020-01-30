@@ -91,7 +91,10 @@ class NoticeParseResult:
         contact_str = []
         for name, phones in self.contacts.items():
             phones = sorted(list(phones))
-            contact_str.append(name + ":" + "、".join(phones))
+            if name:
+                contact_str.append(name + ":" + "、".join(phones))
+            else:
+                contact_str.append("、".join(phones))
         contact_str = '  '.join(contact_str)
         row.append(contact_str)
         url = self.notice['url'] if self.notice else ''
