@@ -44,9 +44,9 @@ class NoticeParser:
         # 发布日期
         date = DateTimeExtractor(notice).extract()
         # 接收方
-        receiver = ReceiverExtractor(notice, notice_body).extract()
+        receiver = ReceiverExtractor(page=page).extract()
         # 物资捐赠地址
-        location = LocationExtractor(notice, notice_body).extract()
+        location = LocationExtractor(page=notice_body).extract()
         return NoticeParseResult(title, receiver, location, demands, date, contacts)
 
     # 所需物资

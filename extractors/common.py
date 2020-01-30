@@ -12,6 +12,8 @@ class Extractor:
         """
         :type page: BeautifulSoup
         """
+        if not content:
+            content = page.text
         if self.remove_spaces:
             content = content.replace(' ', '').replace(' ', '')
         self.content = content
@@ -21,11 +23,17 @@ class Extractor:
         pass
 
 
-def get_demo():
+def get_demo(url=None):
     c = get_cursor()
-    offset = random.randint(0, 100)
-    c.execute('select * from notice_detail where raw_html is not null limit ?,1', (offset,))
-    row = c.fetchone()
+    if url:
+        c.execute('select id from notice where url=?', (url,))
+        notice = c.fetchone()
+        c.execute('select * from notice_detail where notice_id=?', (notice['id'],))
+        row = c.fetchone()
+    else:
+        offset = random.randint(0, 100)
+        c.execute('select * from notice_detail where raw_html is not null limit ?,1', (offset,))
+        row = c.fetchone()
     return BeautifulSoup(row['raw_html'], features='lxml')
 
 
