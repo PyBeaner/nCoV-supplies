@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 
 from database import get_cursor
 from extractors.address import AddressExtractor, AddressInfo
+from extractors.common import get_demo
 from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
 from extractors.receiver import ReceiverExtractor
@@ -11,11 +12,11 @@ from item import AllItems
 
 
 class NoticeParser:
-    def __init__(self, html):
-        self.html = html
+    def __init__(self, page):
+        self.page = page
 
     def parse(self):
-        page = BeautifulSoup(self.html, features='lxml')
+        page = self.page
         import re
         titles = re.findall(r'\S+接[受|收]\S*捐赠\S*公告', page.text)
         if titles and len(titles[0]) <= 40:
@@ -159,7 +160,8 @@ def generate_csv():
             print('non-demand notice', notice['title'])
             continue
         html = row['raw_html']
-        p = NoticeParser(html)
+        page = BeautifulSoup(html, features='lxml')
+        p = NoticeParser(page)
         r = p.parse()
         if not r:  # TODO
             continue
