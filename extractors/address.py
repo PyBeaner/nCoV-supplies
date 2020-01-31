@@ -1,4 +1,5 @@
 import re
+from functools import lru_cache
 
 from extractors.common import Extractor, get_demo
 
@@ -23,13 +24,13 @@ class AddressExtractor(Extractor):
 
 class AddressInfo:
     def __init__(self, address):
-        self.address = address
-        self.result = self.parse()
+        self.result = self.parse(address)
 
-    def parse(self):
+    @lru_cache()
+    def parse(self, address):
         import cpca
         # TODO:umap
-        result = cpca.transform([self.address]).iloc[0]
+        result = cpca.transform([address]).iloc[0]
         return result
 
     def __getitem__(self, item):

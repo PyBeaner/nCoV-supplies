@@ -8,6 +8,7 @@ from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
 from extractors.receiver import ReceiverExtractor
 from item import AllItems
+from utils.site import get_cached_name
 
 
 class NoticeParser:
@@ -115,10 +116,10 @@ class NoticeParseResult:
         official = 'gov.cn' in url
         click_url = '=HYPERLINK("' + url + '")' if url else ''
         row.append(click_url)
-        # site_name = ''
-        # if url:
-        #     site_name = get_title(url)
-        # row.append(site_name)
+        site_name = ''
+        if url:
+            site_name = get_cached_name(url).strip()
+        row.append(site_name)
         row.append('是' if official else '否')
         return row
 
@@ -129,7 +130,7 @@ def get_headers():
         result.append(item.name)
     result.append('联系人/联系方式')
     result.append('来源网址')
-    # result.append('来源网站') # TODO
+    result.append('来源网站')
     result.append('是否政府网站')
     return result
 
@@ -137,22 +138,25 @@ def get_headers():
 def generate_csv():
     print('Output csv...')
     # TODO:更新状态
-    c = get_cursor()
-    c.execute('select id,notice_id,raw_html from notice_detail')
-    rows = c.fetchall()
-    notice_ids = []
-    for row in rows:
-        notice_ids.append(row['notice_id'])
-
-    if notice_ids:
-        in_sql = 'id in (' + ','.join(['?'] * len(notice_ids)) + ')'
-    else:
-        in_sql = '1=0'
-    c.execute('select id,title,url from notice where ' + in_sql, notice_ids)
-    notices = c.fetchall()
     noticeById = {}
-    for notice in notices:
-        noticeById[notice['id']] = notice
+    offset = 0
+    all_rows = []
+    while True:
+        c = get_cursor()
+        c.execute('select id,notice_id,raw_html from notice_detail limit ?,10', (offset,))
+        rows = c.fetchall()
+        notice_ids = []
+        for row in rows:
+            notice_ids.append(row['notice_id'])
+            all_rows.append(row)
+        if not rows:
+            break
+        offset += len(rows)
+        in_sql = 'id in (' + ','.join(['?'] * len(notice_ids)) + ')'
+        c.execute('select id,title,url from notice where ' + in_sql, notice_ids)
+        notices = c.fetchall()
+        for notice in notices:
+            noticeById[notice['id']] = notice
 
     import csv
 
@@ -161,7 +165,7 @@ def generate_csv():
     f.writerow(get_headers())
     seen = set()
     csv_rows = []
-    for row in rows:
+    for row in all_rows:
         notice = noticeById.get(row['notice_id'])
         if '捐赠情况' in notice['title']:
             print('non-demand notice', notice['title'])
