@@ -31,6 +31,9 @@ class NoticeSpider(scrapy.Spider):
             title_info: Tag = result.find('a')
             url = title_info['href']
             title = title_info.text
+            if '公告' not in title:
+                print('ignore', title, url)
+                continue
             print(title, url)
             host = parse_url(url).host
             nd = NoticeDownloader(url, title, host)

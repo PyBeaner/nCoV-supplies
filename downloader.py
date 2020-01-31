@@ -3,6 +3,7 @@ import datetime
 import requests
 
 from database import get_cursor
+from utils.response import get_content
 
 STATUS_INIT = 'init'
 STATUS_FAILED = 'failed'
@@ -69,13 +70,9 @@ class NoticeDownloader:
                 self.update_status(STATUS_IGNORED)
             return
         url = resp.url
-        try:
-            text = resp.content.decode('utf8')
-        except:
-            try:
-                text = resp.content.decode('gbk')
-            except:
-                return  # TODO
+        text = get_content(resp)
+        if not text:
+            return  # TODO
         c = get_cursor()
         now = datetime.datetime.now()
         with c.connection as conn:

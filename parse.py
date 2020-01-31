@@ -4,7 +4,6 @@ from bs4 import BeautifulSoup
 
 from database import get_cursor
 from extractors.address import AddressExtractor, AddressInfo
-from extractors.common import get_demo
 from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
 from extractors.receiver import ReceiverExtractor
@@ -113,8 +112,14 @@ class NoticeParseResult:
         contact_str = '  '.join(contact_str)
         row.append(contact_str)
         url = self.notice['url'] if self.notice else ''
-        url = '=HYPERLINK("' + url + '")' if url else ''
-        row.append(url)
+        official = 'gov.cn' in url
+        click_url = '=HYPERLINK("' + url + '")' if url else ''
+        row.append(click_url)
+        # site_name = ''
+        # if url:
+        #     site_name = get_title(url)
+        # row.append(site_name)
+        row.append('是' if official else '否')
         return row
 
 
@@ -123,7 +128,9 @@ def get_headers():
     for item in AllItems:
         result.append(item.name)
     result.append('联系人/联系方式')
-    result.append('来源')
+    result.append('来源网址')
+    # result.append('来源网站') # TODO
+    result.append('是否政府网站')
     return result
 
 
