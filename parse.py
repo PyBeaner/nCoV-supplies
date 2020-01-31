@@ -21,7 +21,8 @@ class NoticeParser:
         if titles and len(titles[0]) <= 40:
             title = titles[0]
         else:
-            title = page.title.string.strip() if page.title and page.title.string else ''
+            title = page.title.string if page.title and page.title.string else ''
+        title = title.strip()
 
         notice_body = None
         for div in page.find_all('div'):
@@ -150,6 +151,7 @@ def generate_csv():
     f = open('data/demands.csv', 'w', encoding='utf8', newline='')
     f: csv.DictWriter = csv.writer(f)
     f.writerow(get_headers())
+    seen = set()
     csv_rows = []
     for row in rows:
         notice = noticeById.get(row['notice_id'])
@@ -163,8 +165,13 @@ def generate_csv():
             continue
         if notice:
             r.set_notice(notice)
-        csv_rows.append(r.format())
-    csv_rows.sort(key=lambda x: x[0], reverse=True)
+        row = r.format()
+        key = tuple([row[0], row[6]])  # 去重(日期+标题)
+        if key in seen:
+            continue
+        seen.add(key)
+        csv_rows.append(row)
+    csv_rows.sort(key=lambda x: x[0:4], reverse=True)
     f.writerows(csv_rows)
 
 
