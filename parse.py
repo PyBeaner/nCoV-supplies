@@ -7,6 +7,7 @@ from extractors.address import AddressExtractor, AddressInfo
 from extractors.contact import ContactExtractor
 from extractors.date import DateTimeExtractor
 from extractors.receiver import ReceiverExtractor
+from extractors.title import TitleExtractor
 from item import AllItems
 from utils.site import get_cached_name
 
@@ -17,14 +18,7 @@ class NoticeParser:
 
     def parse(self):
         page = self.page
-        import re
-        titles = re.findall(r'\S+接[受|收]\S*捐赠\S*公告', page.text)
-        if titles and len(titles[0]) <= 40:
-            title = titles[0]
-        else:
-            title = page.title.string if page.title and page.title.string else ''
-        title = title.strip()
-
+        title = TitleExtractor(page=page).extract()
         notice_body = None
         for div in page.find_all('div'):
             text = div.get_text()
@@ -167,7 +161,7 @@ def generate_csv():
     csv_rows = []
     for row in all_rows:
         notice = noticeById.get(row['notice_id'])
-        if '捐赠情况' in notice['title']:
+        if '捐赠情况' in notice['title'] or '公示' in notice['title']:
             print('non-demand notice', notice['title'])
             continue
         html = row['raw_html']
