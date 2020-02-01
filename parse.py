@@ -1,6 +1,7 @@
 import datetime
+import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 
 from database import get_cursor
 from extractors.address import AddressExtractor, AddressInfo
@@ -14,6 +15,9 @@ from utils.site import get_cached_name
 
 class NoticeParser:
     def __init__(self, page):
+        """
+        :type page: Tag
+        """
         self.page = page
 
     def parse(self):
@@ -37,6 +41,8 @@ class NoticeParser:
             print('Failed to extract notice info...', title)
             return
         notice = notice_body.get_text().upper()
+        if len(re.findall('元', notice)) >= 5:  # 可能是捐款公示
+            return
         # 物资需求
         demands = self.extract_demands(notice)
         # 联系人信息
@@ -85,12 +91,13 @@ class NoticeParseResult:
     def format(self):
         date = self.published_at.strftime('%Y-%m-%d') if self.published_at else ''
         province, city, district = '', '', ''
-        if self.address:
-            for address in [self.address, self.receiver]:
-                address_info = AddressInfo(address)
-                province, city, district = address_info['省'], address_info['市'], address_info['区']
-                if province or city or district:
-                    break
+        for address in [self.address, self.receiver, self.title]:
+            if not address:
+                continue
+            address_info = AddressInfo(address)
+            province, city, district = address_info['省'], address_info['市'], address_info['区']
+            if province or city or district:
+                break
 
         row = [date, province, city, district, self.receiver, self.address, self.title]
 
