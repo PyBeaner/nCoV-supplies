@@ -86,8 +86,11 @@ class NoticeParseResult:
         date = self.published_at.strftime('%Y-%m-%d') if self.published_at else ''
         province, city, district = '', '', ''
         if self.address:
-            address_info = AddressInfo(self.address)
-            province, city, district = address_info['省'], address_info['市'], address_info['区']
+            for address in [self.address, self.receiver]:
+                address_info = AddressInfo(address)
+                province, city, district = address_info['省'], address_info['市'], address_info['区']
+                if province or city or district:
+                    break
 
         row = [date, province, city, district, self.receiver, self.address, self.title]
 
@@ -161,7 +164,7 @@ def generate_csv():
     csv_rows = []
     for row in all_rows:
         notice = noticeById.get(row['notice_id'])
-        if '捐赠情况' in notice['title'] or '公示' in notice['title']:
+        if '情况' in notice['title']:
             print('non-demand notice', notice['title'])
             continue
         html = row['raw_html']
